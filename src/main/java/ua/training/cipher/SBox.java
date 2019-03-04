@@ -1,6 +1,8 @@
-package ua.training;
+package ua.training.cipher;
 
 import java.math.BigInteger;
+import ua.training.GlobalConfig;
+import ua.training.SimpleMistyConfig;
 
 /**
  * AES s-box.
@@ -27,18 +29,18 @@ public interface SBox {
 
     static BigInteger map(BigInteger value) {
         BigInteger result = BigInteger.ZERO;
-        for (int i = 0; i < Config.HALF_BLOCK_BYTE_LENGTH; i++) {
-            int target = value.shiftRight(Config.BYTE_LENGTH * i).intValue() & Config.UNSIGNED_BYTE_MASK;
-            result = result.add(BigInteger.valueOf(box[target]).shiftLeft(Config.BYTE_LENGTH * i));
+        for (int i = 0; i < GlobalConfig.HALF_BLOCK_BYTE_LENGTH; i++) {
+            int target = value.shiftRight(GlobalConfig.BYTE_LENGTH * i).intValue() & GlobalConfig.UNSIGNED_BYTE_MASK;
+            result = result.add(BigInteger.valueOf(box[target]).shiftLeft(GlobalConfig.BYTE_LENGTH * i));
         }
         return result;
     }
 
     static long map(long value) {
         long result = 0;
-        for (int i = 0; i < Config.HALF_BLOCK_BYTE_LENGTH; i++) {
-            int target = (int) ((value >> (Config.BYTE_LENGTH * i)) & Config.UNSIGNED_BYTE_MASK);
-            result = result ^ (((long) box[target]) << (Config.BYTE_LENGTH * i));
+        for (int i = 0; i < SimpleMistyConfig.HALF_BLOCK_BYTE_LENGTH; i++) {
+            int target = (int) ((value >> (SimpleMistyConfig.BYTE_LENGTH * i)) & SimpleMistyConfig.UNSIGNED_BYTE_MASK);
+            result = result ^ (((long) box[target]) << (SimpleMistyConfig.BYTE_LENGTH * i));
         }
         return result;
     }

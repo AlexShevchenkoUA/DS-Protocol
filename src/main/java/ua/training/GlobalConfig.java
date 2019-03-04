@@ -3,10 +3,9 @@ package ua.training;
 import java.math.BigInteger;
 
 /**
- * Class contains basic parameters for working and test parameters of ds system. Attention: MistyCipher works only
- * with block size 8 bytes, for another size use LongArithmeticMistyCipher.
+ * Class contains basic parameters for working and parameters for testing ds system.
  */
-public interface Config {
+public interface GlobalConfig {
     //Misty cipher parameters
     int BLOCK_BYTE_LENGTH = 8;
     int HALF_BLOCK_BYTE_LENGTH = BLOCK_BYTE_LENGTH / 2;

@@ -1,18 +1,16 @@
 package ua.training;
 
-import java.math.BigInteger;
-import java.util.Arrays;
-import java.util.Random;
-import java.util.stream.Collectors;
+import ua.training.ds.ElGamalSignatureManager;
+import ua.training.ds.Signature;
 
-/**
- * Hello world!
- *
- */
+import java.math.BigInteger;
+import java.util.Random;
+
+
 public class App 
 {
     public static void main( String[] args ) {
-        DigitalSignature digitalSignature = new DigitalSignature();
+        ElGamalSignatureManager digitalSignature = new ElGamalSignatureManager();
 
         digitalSignature.setQ(new BigInteger("57A9144B382BFF0E5C25C9288DF44D23", 16));
         digitalSignature.setA(new BigInteger("9E93A4096E5416CED0242228014B67B5", 16));
