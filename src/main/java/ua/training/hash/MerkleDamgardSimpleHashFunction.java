@@ -4,8 +4,16 @@ import ua.training.GlobalConfig;
 import ua.training.SimpleMistyConfig;
 import ua.training.cipher.SimpleMistyCipher;
 
+import static java.lang.Byte.toUnsignedLong;
+
 public class MerkleDamgardSimpleHashFunction implements SimpleHashFunction {
     private SimpleMistyCipher mistyCipher;
+
+    public MerkleDamgardSimpleHashFunction() {}
+
+    public MerkleDamgardSimpleHashFunction(SimpleMistyCipher mistyCipher) {
+        this.mistyCipher = mistyCipher;
+    }
 
     public SimpleMistyCipher getMistyCipher() {
         return mistyCipher;
@@ -19,10 +27,9 @@ public class MerkleDamgardSimpleHashFunction implements SimpleHashFunction {
 
     @Override
     public long hash(byte[] bytes) {
-        long[] sequence = convertToDenseLongSequence(padding(bytes));
         long result = 0;
 
-        for (long message : sequence) {
+        for (long message : convertToBlockSequenceWithPadding(bytes)) {
             result = roundFunction(message, result);
         }
 
@@ -37,27 +44,23 @@ public class MerkleDamgardSimpleHashFunction implements SimpleHashFunction {
         return mistyCipher.encrypt(m ^ h) ^ h;
     }
 
-    private int[] padding(byte[] bytes) {
-        int paddingLength = SimpleMistyConfig.BLOCK_BYTE_LENGTH - (bytes.length % SimpleMistyConfig.BLOCK_BYTE_LENGTH);
-
-        int[] message = new int[bytes.length + paddingLength];
-
-        for (int i = 0; i < bytes.length; i++) {
-            message[i] = Byte.toUnsignedInt(bytes[i]);
-        }
-
-        message[bytes.length] = 0x80;
-
-        return message;
+    private int getPaddingLength(int sequenceLength) {
+        return SimpleMistyConfig.BLOCK_BYTE_LENGTH - (sequenceLength % SimpleMistyConfig.BLOCK_BYTE_LENGTH);
     }
 
-    private long[] convertToDenseLongSequence(int[] bytes) {
-        long[] blocks = new long[bytes.length / GlobalConfig.BLOCK_BYTE_LENGTH];
-        for (int i = 0; i < blocks.length; i++) {
-            for (int j = 0; j < GlobalConfig.BLOCK_BYTE_LENGTH; j++) {
-                blocks[i] = blocks[i] ^ (bytes[GlobalConfig.BLOCK_BYTE_LENGTH * i + j] << (GlobalConfig.BYTE_LENGTH * j));
-            }
+    private int getSequenceLength(int sparseSequenceLength) {
+        return sparseSequenceLength / SimpleMistyConfig.BLOCK_BYTE_LENGTH;
+    }
+
+    private long[] convertToBlockSequenceWithPadding(byte[] bytes) {
+        long[] message = new long[getSequenceLength(bytes.length + getPaddingLength(bytes.length))];
+
+        for (int i = 0; i < bytes.length; i++) {
+            message[i / SimpleMistyConfig.BLOCK_BYTE_LENGTH] ^= (toUnsignedLong(bytes[i]) << (SimpleMistyConfig.BYTE_LENGTH * (i % SimpleMistyConfig.BLOCK_BYTE_LENGTH)));
         }
-        return blocks;
+
+        message[bytes.length / SimpleMistyConfig.BLOCK_BYTE_LENGTH] ^= (0x80L << (SimpleMistyConfig.BYTE_LENGTH * (bytes.length % SimpleMistyConfig.BYTE_LENGTH)));
+
+        return message;
     }
 }

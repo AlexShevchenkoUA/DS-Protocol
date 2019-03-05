@@ -1,7 +1,10 @@
 package ua.training;
 
+import ua.training.cipher.SimpleMistyCipher;
 import ua.training.ds.ElGamalSignatureManager;
 import ua.training.ds.Signature;
+import ua.training.hash.MerkleDamgardSimpleHashFunction;
+import ua.training.hash.SimpleHashFunction;
 
 import java.math.BigInteger;
 import java.util.Random;
@@ -10,12 +13,13 @@ import java.util.Random;
 public class App 
 {
     public static void main( String[] args ) {
-        ElGamalSignatureManager digitalSignature = new ElGamalSignatureManager();
+        Random random = new Random();
+
+        /*ElGamalSignatureManager digitalSignature = new ElGamalSignatureManager();
 
         digitalSignature.setQ(new BigInteger("57A9144B382BFF0E5C25C9288DF44D23", 16));
         digitalSignature.setA(new BigInteger("9E93A4096E5416CED0242228014B67B5", 16));
 
-        Random random = new Random();
 
         long message = random.nextLong();
 
@@ -26,6 +30,15 @@ public class App
 
         Signature signature = digitalSignature.signature(message, x);
 
-        System.out.println(digitalSignature.verify(signature, message, y));
+        System.out.println(digitalSignature.verify(signature, message, y));*/
+
+        //
+
+        SimpleHashFunction hashFunction = new MerkleDamgardSimpleHashFunction(new SimpleMistyCipher());
+
+        byte[] bytes = new byte[1_000_000];
+        random.nextBytes(bytes);
+
+        System.out.println(hashFunction.hash(bytes));
     }
 }

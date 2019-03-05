@@ -2,6 +2,10 @@ package ua.training.cipher;
 
 import ua.training.SimpleMistyConfig;
 
+import static java.lang.Integer.rotateLeft;
+import static java.lang.Integer.toUnsignedLong;
+import static java.lang.Long.remainderUnsigned;
+
 public class SimpleMistyCipher implements SimpleBlockCipher {
     private long key;
 
@@ -41,7 +45,7 @@ public class SimpleMistyCipher implements SimpleBlockCipher {
     }
 
     private long roundFunction(long text, long roundKey) {
-        return Integer.rotateLeft((int) SBox.map(text ^ roundKey), SimpleMistyConfig.MISTY_ROUND_FUNCTION_SHIFT);
+        return toUnsignedLong(rotateLeft((int) SBox.map(text ^ roundKey), SimpleMistyConfig.MISTY_ROUND_FUNCTION_SHIFT));
     }
 
     private long[] generateRoundKeys(long masterKey) {
@@ -56,6 +60,6 @@ public class SimpleMistyCipher implements SimpleBlockCipher {
     }
 
     private long rightPart(long value) {
-        return Long.remainderUnsigned(value, 1L << (SimpleMistyConfig.BYTE_LENGTH * SimpleMistyConfig.HALF_BLOCK_BYTE_LENGTH));
+        return remainderUnsigned(value, 1L << (SimpleMistyConfig.BYTE_LENGTH * SimpleMistyConfig.HALF_BLOCK_BYTE_LENGTH));
     }
 }
