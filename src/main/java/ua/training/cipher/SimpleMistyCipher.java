@@ -33,7 +33,7 @@ public class SimpleMistyCipher implements SimpleBlockCipher {
             cipherText = encryptionRound(cipherText, key);
         }
 
-        return (rightPart(cipherText) << (SimpleMistyConfig.BYTE_LENGTH * SimpleMistyConfig.HALF_BLOCK_BYTE_LENGTH)) ^ leftPart(cipherText);
+        return Long.reverseBytes((leftPart(Long.reverseBytes(cipherText)) << (SimpleMistyConfig.BYTE_LENGTH * SimpleMistyConfig.HALF_BLOCK_BYTE_LENGTH)) ^ rightPart(Long.reverseBytes(cipherText)));
     }
 
     // Internal realization
@@ -41,7 +41,7 @@ public class SimpleMistyCipher implements SimpleBlockCipher {
     private long encryptionRound(long text, long roundKey) {
         long left = leftPart(text) ^ roundFunction(rightPart(text), roundKey);
 
-        return (left << (SimpleMistyConfig.BYTE_LENGTH * SimpleMistyConfig.HALF_BLOCK_BYTE_LENGTH)) ^ leftPart(text);
+        return (leftPart(text) << (SimpleMistyConfig.BYTE_LENGTH * SimpleMistyConfig.HALF_BLOCK_BYTE_LENGTH)) ^ left;
     }
 
     private long roundFunction(long text, long roundKey) {
@@ -55,11 +55,11 @@ public class SimpleMistyCipher implements SimpleBlockCipher {
         return new long[] { leftPart, rightPart, ~rightPart, ~leftPart };
     }
 
-    private long leftPart(long value) {
+    private long rightPart(long value) {
         return value >>> SimpleMistyConfig.BYTE_LENGTH * SimpleMistyConfig.HALF_BLOCK_BYTE_LENGTH;
     }
 
-    private long rightPart(long value) {
+    private long leftPart(long value) {
         return remainderUnsigned(value, 1L << (SimpleMistyConfig.BYTE_LENGTH * SimpleMistyConfig.HALF_BLOCK_BYTE_LENGTH));
     }
 }

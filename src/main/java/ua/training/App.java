@@ -6,13 +6,17 @@ import ua.training.ds.Signature;
 import ua.training.hash.MerkleDamgardSimpleHashFunction;
 import ua.training.hash.SimpleHashFunction;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 
 public class App 
 {
-    public static void main( String[] args ) {
+    public static void main( String[] args ) throws Exception {
         Random random = new Random();
 
         /*ElGamalSignatureManager digitalSignature = new ElGamalSignatureManager();
@@ -36,9 +40,26 @@ public class App
 
         SimpleHashFunction hashFunction = new MerkleDamgardSimpleHashFunction(new SimpleMistyCipher());
 
-        byte[] bytes = new byte[1_000_000];
-        random.nextBytes(bytes);
+        InputStream stream = new FileInputStream("1.txt");
 
-        System.out.println(hashFunction.hash(bytes));
+        List<Byte> bytes = new ArrayList<>();
+
+        int b = stream.read();
+
+        while (b != -1) {
+            bytes.add((byte) b);
+            b = stream.read();
+
+        }
+
+        byte[] bytes_array = new byte[bytes.size()];
+
+        for (int i = 0; i < bytes.size(); i++) {
+            bytes_array[i] = bytes.get(i).byteValue();
+        }
+
+        stream.close();
+
+        System.out.println(Long.toUnsignedString(hashFunction.hash(bytes_array), 16));
     }
 }

@@ -4,6 +4,8 @@ import ua.training.GlobalConfig;
 import ua.training.SimpleMistyConfig;
 import ua.training.cipher.SimpleMistyCipher;
 
+import java.sql.SQLOutput;
+
 import static java.lang.Byte.toUnsignedLong;
 
 public class MerkleDamgardSimpleHashFunction implements SimpleHashFunction {
@@ -59,7 +61,7 @@ public class MerkleDamgardSimpleHashFunction implements SimpleHashFunction {
             message[i / SimpleMistyConfig.BLOCK_BYTE_LENGTH] ^= (toUnsignedLong(bytes[i]) << (SimpleMistyConfig.BYTE_LENGTH * (i % SimpleMistyConfig.BLOCK_BYTE_LENGTH)));
         }
 
-        message[bytes.length / SimpleMistyConfig.BLOCK_BYTE_LENGTH] ^= (0x80L << (SimpleMistyConfig.BYTE_LENGTH * (bytes.length % SimpleMistyConfig.BYTE_LENGTH)));
+        message[bytes.length / SimpleMistyConfig.BLOCK_BYTE_LENGTH] ^= (0x80L << (SimpleMistyConfig.BYTE_LENGTH * (bytes.length % SimpleMistyConfig.BLOCK_BYTE_LENGTH)));
 
         return message;
     }
