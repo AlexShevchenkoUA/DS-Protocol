@@ -1,5 +1,7 @@
 package ua.training;
 
+import ua.training.cipher.BlockCipher;
+import ua.training.cipher.MistyCipher;
 import ua.training.cipher.SimpleMistyCipher;
 import ua.training.ds.ElGamalSignatureManager;
 import ua.training.ds.Signature;
@@ -18,6 +20,9 @@ public class App
 {
     public static void main( String[] args ) throws Exception {
         Random random = new Random();
+
+        System.out.println(Long.toUnsignedString(new SimpleMistyCipher(1234L).encrypt(1234L), 16));
+        System.out.println(new MistyCipher(BigInteger.valueOf(1234L)).encrypt(BigInteger.valueOf(1234L)).toString(16));
 
         /*ElGamalSignatureManager digitalSignature = new ElGamalSignatureManager();
 
@@ -38,7 +43,7 @@ public class App
 
         //
 
-        SimpleHashFunction hashFunction = new MerkleDamgardSimpleHashFunction(new SimpleMistyCipher());
+        /*SimpleHashFunction hashFunction = new MerkleDamgardSimpleHashFunction(new SimpleMistyCipher());
 
         InputStream stream = new FileInputStream("1.txt");
 
@@ -60,6 +65,6 @@ public class App
 
         stream.close();
 
-        System.out.println(Long.toUnsignedString(hashFunction.hash(bytes_array), 16));
+        System.out.println(Long.toUnsignedString(hashFunction.hash(bytes_array), 16));*/
     }
 }

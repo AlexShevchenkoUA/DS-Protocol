@@ -29,9 +29,12 @@ public class MistyCipher implements BlockCipher {
             cipherText = encryptionRound(cipherText, key);
         }
 
-        return rightPart(cipherText)
-                .shiftLeft(GlobalConfig.BYTE_LENGTH * GlobalConfig.HALF_BLOCK_BYTE_LENGTH)
-                .add(leftPart(cipherText));
+        return bytesReverse(
+                leftPart(bytesReverse(cipherText, GlobalConfig.BYTE_LENGTH))
+                        .shiftLeft(GlobalConfig.BYTE_LENGTH * GlobalConfig.HALF_BLOCK_BYTE_LENGTH)
+                        .xor(rightPart(bytesReverse(cipherText, GlobalConfig.BYTE_LENGTH))),
+                GlobalConfig.BYTE_LENGTH
+        );
     }
 
     // Internal realization
@@ -39,8 +42,7 @@ public class MistyCipher implements BlockCipher {
     private BigInteger encryptionRound(BigInteger text, BigInteger roundKey) {
         return leftPart(text)
                 .xor(roundFunction(rightPart(text), roundKey))
-                .shiftLeft(GlobalConfig.BYTE_LENGTH * GlobalConfig.HALF_BLOCK_BYTE_LENGTH)
-                .xor(leftPart(text));
+                .xor(leftPart(text).shiftLeft(GlobalConfig.BYTE_LENGTH * GlobalConfig.HALF_BLOCK_BYTE_LENGTH));
     }
 
     private BigInteger roundFunction(BigInteger text, BigInteger roundKey) {
@@ -63,11 +65,11 @@ public class MistyCipher implements BlockCipher {
         };
     }
 
-    private BigInteger leftPart(BigInteger bigInteger) {
+    private BigInteger rightPart(BigInteger bigInteger) {
         return bigInteger.shiftRight(GlobalConfig.BYTE_LENGTH * GlobalConfig.HALF_BLOCK_BYTE_LENGTH);
     }
 
-    private BigInteger rightPart(BigInteger bigInteger) {
+    private BigInteger leftPart(BigInteger bigInteger) {
         return bigInteger.mod(BigInteger.ONE.shiftLeft(GlobalConfig.BYTE_LENGTH * GlobalConfig.HALF_BLOCK_BYTE_LENGTH));
     }
 
@@ -80,5 +82,16 @@ public class MistyCipher implements BlockCipher {
         return value.shiftLeft(shift)
                 .xor(value.shiftRight(bitLength - shift))
                 .mod(BigInteger.ONE.shiftLeft(bitLength));
+    }
+
+    private BigInteger bytesReverse(BigInteger bigInteger, int byteLength) {
+        BigInteger mask = BigInteger.valueOf(GlobalConfig.UNSIGNED_BYTE_MASK);
+        BigInteger reversed = BigInteger.ZERO;
+
+        for (int i = 0; i < byteLength; i++) {
+            reversed = reversed.xor(bigInteger.shiftRight(GlobalConfig.BYTE_LENGTH * i).and(mask).shiftLeft(GlobalConfig.BYTE_LENGTH * (byteLength - i - 1)));
+        }
+
+        return reversed;
     }
 }
