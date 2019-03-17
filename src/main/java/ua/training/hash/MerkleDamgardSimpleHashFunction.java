@@ -4,6 +4,8 @@ import ua.training.GlobalConfig;
 import ua.training.SimpleMistyConfig;
 import ua.training.cipher.SimpleMistyCipher;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.SQLOutput;
 
 import static java.lang.Byte.toUnsignedLong;
@@ -38,6 +40,23 @@ public class MerkleDamgardSimpleHashFunction implements SimpleHashFunction {
         return result;
     }
 
+    @Override
+    public long hash(InputStream stream)throws IOException {
+        try (InputStream inputStream = stream) {
+            long result = 0;
+
+            byte[] buffer = new byte[SimpleMistyConfig.BLOCK_BYTE_LENGTH];
+
+            int consumed;
+
+            while((consumed = inputStream.read(buffer)) == buffer.length) {
+                result = roundFunction(boxBytesInLong(buffer), result);
+            }
+
+            return roundFunction(getPuddingBox(buffer, consumed > -1 ? consumed : 0), result);
+        }
+    }
+
     // Internal realization
 
     private long roundFunction(long m, long h) {
@@ -64,5 +83,21 @@ public class MerkleDamgardSimpleHashFunction implements SimpleHashFunction {
         message[bytes.length / SimpleMistyConfig.BLOCK_BYTE_LENGTH] ^= (0x80L << (SimpleMistyConfig.BYTE_LENGTH * (bytes.length % SimpleMistyConfig.BLOCK_BYTE_LENGTH)));
 
         return message;
+    }
+
+    private long boxBytesInLong(byte[] buffer) {
+        long box = 0;
+        for (int i = 0; i < SimpleMistyConfig.BLOCK_BYTE_LENGTH; i++) {
+            box ^= (toUnsignedLong(buffer[i])) << (SimpleMistyConfig.BYTE_LENGTH * i);
+        }
+        return box;
+    }
+
+    private long getPuddingBox(byte[] buffer, int consumed) {
+        long box = 0;
+        for (int i = 0; i < consumed; i++) {
+            box ^= (toUnsignedLong(buffer[i])) << (SimpleMistyConfig.BYTE_LENGTH * i);
+        }
+        return box ^ (0x80L << (SimpleMistyConfig.BYTE_LENGTH * consumed));
     }
 }
