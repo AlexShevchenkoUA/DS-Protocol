@@ -26,11 +26,15 @@ public class BenchmarkTest {
         hashFunction = new MerkleDamgardSimpleHashFunction(new SimpleMistyCipher());
     }
 
-    @Before
+    //@Before
     public void createTempFile() throws IOException {
         Random random = new Random();
         byte[] bytes = new byte[128];
         long time = currentTimeMillis();
+
+        if (Paths.get(tempFile).toFile().exists()) {
+            return;
+        }
 
         try (OutputStream stream = new BufferedOutputStream(new FileOutputStream(valueOf(get(tempFile))))) {
             for (long i = 0; i < (size >>> 7); i++) {
@@ -47,9 +51,7 @@ public class BenchmarkTest {
 
     @Test
     public void benchmark() throws IOException {
-        for (int i = 5; i < 10; i++) {
-            template((1 << i) * (1 << 20));
-        }
+        template(512 * (1 << 20));
     }
 
     public void template(int batchSize) throws IOException {
@@ -57,6 +59,28 @@ public class BenchmarkTest {
             long time = currentTimeMillis();
             long hash = hashFunction.hash(stream);
             System.out.println("Batch size - " + batchSize + " hash - " + toUnsignedString(hash, 16) + " time - " + (time = currentTimeMillis() - time));
+            System.out.println("Speed - " + (((double) (size >>> 20)) / time) + " MB/ms");
+        }
+    }
+
+    @Test
+    public void testWithoutIO() throws IOException {
+        try (InputStream stream = new InputStream() {
+            Random random = new Random();
+            long count = 0;
+
+            @Override
+            public int read() throws IOException {
+                if (count++ < size) {
+                    return random.nextInt();
+                } else {
+                    return -1;
+                }
+            }
+        }) {
+            long time = currentTimeMillis();
+            long hash = hashFunction.hash(stream);
+            System.out.println("Hash - " + toUnsignedString(hash, 16) + " time - " + (time = currentTimeMillis() - time));
             System.out.println("Speed - " + (((double) (size >>> 20)) / time) + " MB/ms");
         }
     }
