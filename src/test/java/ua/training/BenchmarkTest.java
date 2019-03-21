@@ -22,12 +22,12 @@ public class BenchmarkTest {
     private String tempFile = "temp.bin";
 
     @Before
-    void initHashFunction() {
+    public void initHashFunction() {
         hashFunction = new MerkleDamgardSimpleHashFunction(new SimpleMistyCipher());
     }
 
     @Before
-    void createTempFile() throws IOException {
+    public void createTempFile() throws IOException {
         Random random = new Random();
         byte[] bytes = new byte[128];
         long time = currentTimeMillis();
@@ -43,13 +43,13 @@ public class BenchmarkTest {
     }
 
     @Test
-    void benchmark() throws IOException {
+    public void benchmark() throws IOException {
         for (int i = 5; i < 10; i++) {
             template((1 << i) * (1 << 20));
         }
     }
 
-    void template(int batchSize) throws IOException {
+    public void template(int batchSize) throws IOException {
         try (InputStream stream = new BufferedInputStream(new FileInputStream(valueOf(get(tempFile))), batchSize)) {
             long time = currentTimeMillis();
             long hash = hashFunction.hash(stream);
