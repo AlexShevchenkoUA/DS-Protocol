@@ -36,6 +36,9 @@ public class BenchmarkTest {
             for (long i = 0; i < size; i++) {
                 random.nextBytes(bytes);
                 stream.write(bytes);
+                if (i % (1L << 26) == 0) {
+                    System.out.println("Written " + (i >>> 26) + " out of " + (size >>> 26));
+                }
             }
         }
 
