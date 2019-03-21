@@ -33,7 +33,7 @@ public class BenchmarkTest {
         long time = currentTimeMillis();
 
         try (OutputStream stream = new BufferedOutputStream(new FileOutputStream(valueOf(get(tempFile))))) {
-            for (long i = 0; i < size; i++) {
+            for (long i = 0; i < (size / 128); i++) {
                 random.nextBytes(bytes);
                 stream.write(bytes);
                 if (i % (1L << 26) == 0) {
