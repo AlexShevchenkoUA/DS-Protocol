@@ -3,6 +3,7 @@ package ua.training;
 import org.junit.Before;
 import org.junit.Test;
 import ua.training.cipher.SimpleMistyCipher;
+import ua.training.hash.AsyncInputStream;
 import ua.training.hash.MerkleDamgardSimpleHashFunction;
 import ua.training.hash.SimpleHashFunction;
 
@@ -13,12 +14,13 @@ import java.util.Random;
 import static java.lang.Long.toUnsignedString;
 import static java.lang.String.valueOf;
 import static java.lang.System.currentTimeMillis;
+import static java.lang.System.nanoTime;
 import static java.nio.file.Paths.get;
 
 public class BenchmarkTest {
     private SimpleHashFunction hashFunction;
 
-    private long size = 64 * (1L << 30) + 1L;    //Size 64 GB
+    private long size = 256 * (1L << 20) + 1L;    //Size 2 GB
     private String tempFile = "temp.bin";
 
     @Before
@@ -26,7 +28,7 @@ public class BenchmarkTest {
         hashFunction = new MerkleDamgardSimpleHashFunction(new SimpleMistyCipher());
     }
 
-    //@Before
+    @Before
     public void createTempFile() throws IOException {
         Random random = new Random();
         byte[] bytes = new byte[128];
@@ -40,9 +42,6 @@ public class BenchmarkTest {
             for (long i = 0; i < (size >>> 7); i++) {
                 random.nextBytes(bytes);
                 stream.write(bytes);
-                if (i % (1L << 20) == 0) {
-                    System.out.println("Written " + ((i >>> 20)) + " out of " + (size >>> 27));
-                }
             }
         }
 
@@ -51,28 +50,26 @@ public class BenchmarkTest {
 
     @Test
     public void benchmark() throws IOException {
-        template(512 * (1 << 20));
-    }
-
-    public void template(int batchSize) throws IOException {
-        try (InputStream stream = new BufferedInputStream(new FileInputStream(valueOf(get(tempFile))), batchSize)) {
+        /*try (InputStream stream = AsyncInputStream.getDefault(tempFile)) {
             long time = currentTimeMillis();
-            long hash = hashFunction.hash(stream);
-            System.out.println("Batch size - " + batchSize + " hash - " + toUnsignedString(hash, 16) + " time - " + (time = currentTimeMillis() - time));
+            byte[] bytes = new byte[8];
+            while (stream.read(bytes) != -1);
+            time = currentTimeMillis() - time;
             System.out.println("Speed - " + (((double) (size >>> 20)) / time) + " MB/ms");
-        }
-    }
+            System.out.println(time);
+        }*/
 
-    @Test
-    public void testWithoutIO() throws IOException {
         try (InputStream stream = new InputStream() {
             Random random = new Random();
-            long count = 0;
+
+            long size1 = (1L << 30);
+            long count;
 
             @Override
             public int read() throws IOException {
-                if (count++ < size) {
-                    return random.nextInt();
+                if (count < size1) {
+                    count++;
+                    return random.nextInt(1 << 8);
                 } else {
                     return -1;
                 }
@@ -80,8 +77,17 @@ public class BenchmarkTest {
         }) {
             long time = currentTimeMillis();
             long hash = hashFunction.hash(stream);
-            System.out.println("Hash - " + toUnsignedString(hash, 16) + " time - " + (time = currentTimeMillis() - time));
+            System.out.println(Long.toUnsignedString(hash, 16));
+            time = currentTimeMillis() - time;
             System.out.println("Speed - " + (((double) (size >>> 20)) / time) + " MB/ms");
+            System.out.println(time);
         }
+
+        /*try (InputStream stream = AsyncInputStream.getDefault(tempFile)) {
+            long time = currentTimeMillis();
+            long hash = hashFunction.hash(stream);
+            System.out.println(Long.toUnsignedString(hash, 16));
+            System.out.println("Speed - " + (((double) (size >>> 20)) / (currentTimeMillis() - time)) + " MB/ms");
+        }*/
     }
 }

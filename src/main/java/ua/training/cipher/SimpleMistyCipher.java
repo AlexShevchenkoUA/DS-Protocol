@@ -5,22 +5,24 @@ import ua.training.SimpleMistyConfig;
 import static java.lang.Integer.rotateLeft;
 import static java.lang.Integer.toUnsignedLong;
 import static java.lang.Long.remainderUnsigned;
+import static java.lang.Long.reverseBytes;
 
 public class SimpleMistyCipher implements SimpleBlockCipher {
-    private long key;
+    private long masterKey;
+    private long[] keySchedule = new long[4];
 
     public SimpleMistyCipher() {}
 
     public SimpleMistyCipher(long key) {
-        this.key = key;
+        this.masterKey = key;
     }
 
-    public void setKey(long key) {
-        this.key = key;
+    public void setMasterKey(long masterKey) {
+        this.masterKey = masterKey;
     }
 
-    public long getKey() {
-        return key;
+    public long getMasterKey() {
+        return masterKey;
     }
 
     // Simple block cipher interface implementation
@@ -29,11 +31,13 @@ public class SimpleMistyCipher implements SimpleBlockCipher {
     public long encrypt(long plainText) {
         long cipherText = plainText;
 
-        for (long key : generateRoundKeys(key)) {
+        for (long key : generateRoundKeys(masterKey, keySchedule)) {
             cipherText = encryptionRound(cipherText, key);
         }
 
-        return Long.reverseBytes((leftPart(Long.reverseBytes(cipherText)) << (SimpleMistyConfig.BYTE_LENGTH * SimpleMistyConfig.HALF_BLOCK_BYTE_LENGTH)) ^ rightPart(Long.reverseBytes(cipherText)));
+        long reversed = reverseBytes(cipherText);
+
+        return reverseBytes((reversed << (SimpleMistyConfig.BYTE_LENGTH * SimpleMistyConfig.HALF_BLOCK_BYTE_LENGTH)) ^ rightPart(reversed));
     }
 
     // Internal realization
@@ -41,7 +45,7 @@ public class SimpleMistyCipher implements SimpleBlockCipher {
     private long encryptionRound(long text, long roundKey) {
         long left = leftPart(text) ^ roundFunction(rightPart(text), roundKey);
 
-        return (leftPart(text) << (SimpleMistyConfig.BYTE_LENGTH * SimpleMistyConfig.HALF_BLOCK_BYTE_LENGTH)) ^ left;
+        return (text << (SimpleMistyConfig.BYTE_LENGTH * SimpleMistyConfig.HALF_BLOCK_BYTE_LENGTH)) ^ left;
     }
 
     private long roundFunction(long text, long roundKey) {
@@ -55,8 +59,20 @@ public class SimpleMistyCipher implements SimpleBlockCipher {
         return new long[] { leftPart, rightPart, ~rightPart, ~leftPart };
     }
 
+    private long[] generateRoundKeys(long masterKey, long[] keyScheduleContainer) {
+        long leftPart = leftPart(masterKey);
+        long rightPart = rightPart(masterKey);
+
+        keyScheduleContainer[0] = leftPart;
+        keyScheduleContainer[1] = rightPart;
+        keyScheduleContainer[2] = ~rightPart;
+        keyScheduleContainer[3] = ~leftPart;
+
+        return keyScheduleContainer;
+    }
+
     private long rightPart(long value) {
-        return value >>> SimpleMistyConfig.BYTE_LENGTH * SimpleMistyConfig.HALF_BLOCK_BYTE_LENGTH;
+        return value >>> (SimpleMistyConfig.BYTE_LENGTH * SimpleMistyConfig.HALF_BLOCK_BYTE_LENGTH);
     }
 
     private long leftPart(long value) {

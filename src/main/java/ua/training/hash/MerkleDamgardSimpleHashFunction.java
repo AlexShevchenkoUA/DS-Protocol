@@ -1,12 +1,10 @@
 package ua.training.hash;
 
-import ua.training.GlobalConfig;
 import ua.training.SimpleMistyConfig;
 import ua.training.cipher.SimpleMistyCipher;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.SQLOutput;
 
 import static java.lang.Byte.toUnsignedLong;
 
@@ -49,8 +47,10 @@ public class MerkleDamgardSimpleHashFunction implements SimpleHashFunction {
 
             int consumed;
 
-            while((consumed = inputStream.read(buffer)) == buffer.length) {
+            consumed = inputStream.read(buffer);
+            while(consumed == buffer.length) {
                 result = roundFunction(boxBytesInLong(buffer), result);
+                consumed = inputStream.read(buffer);
             }
 
             return roundFunction(getPuddingBox(buffer, consumed > -1 ? consumed : 0), result);
@@ -60,7 +60,7 @@ public class MerkleDamgardSimpleHashFunction implements SimpleHashFunction {
     // Internal realization
 
     private long roundFunction(long m, long h) {
-        mistyCipher.setKey(m);
+        mistyCipher.setMasterKey(m);
 
         return mistyCipher.encrypt(m ^ h) ^ h;
     }
@@ -87,9 +87,14 @@ public class MerkleDamgardSimpleHashFunction implements SimpleHashFunction {
 
     private long boxBytesInLong(byte[] buffer) {
         long box = 0;
-        for (int i = 0; i < SimpleMistyConfig.BLOCK_BYTE_LENGTH; i++) {
-            box ^= (toUnsignedLong(buffer[i])) << (SimpleMistyConfig.BYTE_LENGTH * i);
-        }
+        box ^= (toUnsignedLong(buffer[0])) << (0);
+        box ^= (toUnsignedLong(buffer[1])) << (SimpleMistyConfig.BYTE_LENGTH);
+        box ^= (toUnsignedLong(buffer[2])) << (SimpleMistyConfig.BYTE_LENGTH * 2);
+        box ^= (toUnsignedLong(buffer[3])) << (SimpleMistyConfig.BYTE_LENGTH * 3);
+        box ^= (toUnsignedLong(buffer[4])) << (SimpleMistyConfig.BYTE_LENGTH * 4);
+        box ^= (toUnsignedLong(buffer[5])) << (SimpleMistyConfig.BYTE_LENGTH * 5);
+        box ^= (toUnsignedLong(buffer[6])) << (SimpleMistyConfig.BYTE_LENGTH * 6);
+        box ^= (toUnsignedLong(buffer[7])) << (SimpleMistyConfig.BYTE_LENGTH * 7);
         return box;
     }
 
