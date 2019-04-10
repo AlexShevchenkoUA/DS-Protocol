@@ -34,9 +34,8 @@ public class AsyncInputStream extends InputStream {
     }
 
     @Override
-    public int read() throws IOException {
+    public int read() {
         if (offset >= length) {
-            System.out.println(test++);
             if (backgroundRead == null) {
                 backgroundRead = supplyAsync(() -> {
                     try {

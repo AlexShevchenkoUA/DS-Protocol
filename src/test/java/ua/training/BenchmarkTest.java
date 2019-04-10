@@ -9,6 +9,7 @@ import ua.training.hash.SimpleHashFunction;
 
 import java.io.*;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
 import java.util.Random;
 
 import static java.lang.Long.toUnsignedString;
@@ -18,7 +19,7 @@ import static java.lang.System.nanoTime;
 import static java.nio.file.Paths.get;
 
 public class BenchmarkTest {
-    private SimpleHashFunction hashFunction;
+    /*private SimpleHashFunction hashFunction;
 
     private long size = 256 * (1L << 20) + 1L;    //Size 2 GB
     private String tempFile = "temp.bin";
@@ -49,15 +50,15 @@ public class BenchmarkTest {
     }
 
     @Test
-    public void benchmark() throws IOException {
-        /*try (InputStream stream = AsyncInputStream.getDefault(tempFile)) {
+    public void benchmark() throws Exception {
+        *//*try (InputStream stream = AsyncInputStream.getDefault(tempFile)) {
             long time = currentTimeMillis();
             byte[] bytes = new byte[8];
             while (stream.read(bytes) != -1);
             time = currentTimeMillis() - time;
             System.out.println("Speed - " + (((double) (size >>> 20)) / time) + " MB/ms");
             System.out.println(time);
-        }*/
+        }*//*
 
         try (InputStream stream = new InputStream() {
             Random random = new Random();
@@ -76,18 +77,10 @@ public class BenchmarkTest {
             }
         }) {
             long time = currentTimeMillis();
-            long hash = hashFunction.hash(stream);
-            System.out.println(Long.toUnsignedString(hash, 16));
+
             time = currentTimeMillis() - time;
-            System.out.println("Speed - " + (((double) (size >>> 20)) / time) + " MB/ms");
+            System.out.println("Speed - " + (((double) (1 << 10)) / time) + " MB/ms");
             System.out.println(time);
         }
-
-        /*try (InputStream stream = AsyncInputStream.getDefault(tempFile)) {
-            long time = currentTimeMillis();
-            long hash = hashFunction.hash(stream);
-            System.out.println(Long.toUnsignedString(hash, 16));
-            System.out.println("Speed - " + (((double) (size >>> 20)) / (currentTimeMillis() - time)) + " MB/ms");
-        }*/
-    }
+    }*/
 }

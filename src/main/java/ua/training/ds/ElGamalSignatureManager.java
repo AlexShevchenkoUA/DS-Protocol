@@ -14,34 +14,42 @@ public class ElGamalSignatureManager implements SignatureManager, SimpleSignatur
 
     // Dependency injection interface
 
-    public void setQ(BigInteger q) {
-        this.q = q;
-        this.p = q.shiftLeft(1).add(BigInteger.ONE);
+    public Random getRandom() {
+        return random;
     }
 
-    public void setA(BigInteger a) {
-        this.a = a;
+    public ElGamalSignatureManager setRandom(Random random) {
+        this.random = random;
+        return this;
     }
 
     public BigInteger getP() {
         return p;
     }
 
+    public ElGamalSignatureManager setP(BigInteger p) {
+        this.p = p;
+        return this;
+    }
+
     public BigInteger getQ() {
         return q;
+    }
+
+    public ElGamalSignatureManager setQ(BigInteger q) {
+        this.q = q;
+        return this;
     }
 
     public BigInteger getA() {
         return a;
     }
 
-    public void setRandom(Random random) {
-        this.random = random;
+    public ElGamalSignatureManager setA(BigInteger a) {
+        this.a = a;
+        return this;
     }
 
-    public Random getRandom() {
-        return random;
-    }
 
     // Signature manager interface implementation
 
@@ -56,7 +64,12 @@ public class ElGamalSignatureManager implements SignatureManager, SimpleSignatur
 
         BigInteger S = a.modPow(g, p);
 
-        return new Signature(k, S);
+        return new Signature(k, S)
+                .setU(U)
+                .setG(g)
+                .setY(getPublicKey(privateKey))
+                .setZ(Z)
+                .setFormattedHash(hash);
     }
 
     @Override
@@ -73,12 +86,22 @@ public class ElGamalSignatureManager implements SignatureManager, SimpleSignatur
 
     @Override
     public Signature signature(long hash, BigInteger privateKey) {
-        return signature(format(hash), privateKey);
+        return signature(format(hash), privateKey).setHash(hash);
     }
 
     @Override
     public boolean verify(Signature signature, long message, BigInteger publicKey) {
         return verify(signature, format(message), publicKey);
+    }
+
+    @Override
+    public BigInteger getPrivateKey() {
+        return new BigInteger(p.bitLength(), random).mod(p.subtract(BigInteger.ONE));
+    }
+
+    @Override
+    public BigInteger getPublicKey(BigInteger privateKey) {
+        return a.modPow(privateKey, p);
     }
 
     private BigInteger format(long value) {
